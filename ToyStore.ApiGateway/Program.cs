@@ -1,4 +1,5 @@
 using ToyStore.ApiGateway.Extensions;
+using ToyStore.Infrastructure.Messaging.AzureServiceBus.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,6 +18,9 @@ builder.Services.AddRepositories();
 
 // Application Services
 builder.Services.AddApplicationServices();
+
+// Messaging
+builder.Services.AddMessaging(builder.Configuration);
 
 var app = builder.Build();
 
