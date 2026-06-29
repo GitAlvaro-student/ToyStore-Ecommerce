@@ -8,18 +8,22 @@
 
   <ItemGroup>
     <PackageReference Include="Azure.Messaging.ServiceBus" Version="7.10.0" />
-    <PackageReference Include="Oracle.EntityFrameworkCore" Version="9.23.26200" />
-    <PackageReference Include="Oracle.ManagedDataAccess.Core" Version="23.26.200" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="8.0.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Entities\" />
     <Folder Include="Configurations\" />
-    <Folder Include="Extensions\" />
     <Folder Include="Middlewares\" />
-    <Folder Include="Repositories\" />
-    <Folder Include="Services\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ToyStore.Contracts\ToyStore.Contracts.csproj" />
   </ItemGroup>
 
 </Project>

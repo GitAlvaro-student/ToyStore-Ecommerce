@@ -5,11 +5,18 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
-
+  
   <ItemGroup>
     <PackageReference Include="Azure.Messaging.ServiceBus" Version="7.10.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.0" />
     <PackageReference Include="Oracle.EntityFrameworkCore" Version="9.23.26200" />
     <PackageReference Include="Oracle.ManagedDataAccess.Core" Version="23.26.200" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Folder Include="Extensions\" />
+    <Folder Include="Configurations\" />
+    <Folder Include="Persistence\" />
   </ItemGroup>
 
 </Project>

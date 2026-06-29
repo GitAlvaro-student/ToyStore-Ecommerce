@@ -8,7 +8,7 @@ namespace ToyStore.Contracts.Enums
 {
     public enum OrderStatus
     {
-        Pendig,
+        Pending,
         PaymentProcessing,
         Paid,
         PaymentFailed,
