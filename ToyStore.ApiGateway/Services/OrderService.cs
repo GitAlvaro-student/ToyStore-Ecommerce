@@ -1,18 +1,28 @@
 ﻿using ToyStore.ApiGateway.Entities;
 using ToyStore.ApiGateway.Repositories;
+using ToyStore.Contracts.Commands;
 using ToyStore.Contracts.Enums;
 using ToyStore.Contracts.Requests;
 using ToyStore.Contracts.Responses;
+using ToyStore.Infrastructure.Messaging.AzureServiceBus.Interfaces;
+using ToyStore.Infrastructure.Messaging.ServiceBus.Configurations;
 
 namespace ToyStore.ApiGateway.Services;
 
 public class OrderService : IOrderService
 {
     private readonly IOrderRepository _orderRepository;
+    private readonly IMessagePublisher _publisher;
+    private readonly ILogger<OrderService> _logger;
 
-    public OrderService(IOrderRepository orderRepository)
+    public OrderService(
+        IOrderRepository orderRepository,
+        IMessagePublisher publisher,
+        ILogger<OrderService> logger)
     {
         _orderRepository = orderRepository;
+        _publisher = publisher;
+        _logger = logger;
     }
 
     public async Task<OrderResponse> CreateOrderAsync(CreateOrderRequest request)
@@ -49,6 +59,21 @@ public class OrderService : IOrderService
         await _orderRepository.AddAsync(order);
         await _orderRepository.SaveChangesAsync();
 
+        _logger.LogInformation("Pedido {OrderId} criado com sucesso.", order.Id);
+
+        var command = new CreatePaymentCommand
+        {
+            OrderId = order.Id,
+            CustomerName = order.CustomerName,
+            TotalAmount = order.TotalAmount,
+            CreatedAt = order.CreatedAt
+        };
+
+        await _publisher.PublishAsync(command, ServiceBusQueues.PaymentQueue);
+
+        _logger.LogInformation(
+            "CreatePaymentCommand publicado para o pedido {OrderId}.", order.Id);
+
         // Mapeia para response
         return MapToResponse(order);
     }
@@ -78,5 +103,30 @@ public class OrderService : IOrderService
                 UnitPrice = i.UnitPrice
             }).ToList()
         };
+    }
+
+    public async Task UpdateOrderStatusAsync(Guid orderId, OrderStatus status)
+    {
+        var order = await _orderRepository.GetByIdAsync(orderId);
+
+        if (order is null)
+        {
+            _logger.LogWarning(
+                "Tentativa de atualizar status do pedido {OrderId} que não foi encontrado.",
+                orderId);
+            return;
+        }
+
+        var previousStatus = order.Status;
+        order.Status = status;
+
+        await _orderRepository.UpdateAsync(order);
+        await _orderRepository.SaveChangesAsync();
+
+        _logger.LogInformation(
+            "Pedido {OrderId} atualizado: {PreviousStatus} → {NewStatus}.",
+            orderId,
+            previousStatus,
+            status);
     }
 }

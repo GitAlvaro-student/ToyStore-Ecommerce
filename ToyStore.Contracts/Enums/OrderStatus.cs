@@ -12,6 +12,7 @@ namespace ToyStore.Contracts.Enums
         PaymentProcessing,
         Paid,
         PaymentFailed,
+        Cancelled,
         InventoryReserved,
         Shipped,
         Completed

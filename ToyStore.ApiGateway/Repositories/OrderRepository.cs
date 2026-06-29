@@ -29,4 +29,10 @@ public class OrderRepository : IOrderRepository
     {
         return await _context.SaveChangesAsync();
     }
+
+    public Task UpdateAsync(Order order)
+    {
+        _context.Orders.Update(order);
+        return Task.CompletedTask;
+    }
 }
