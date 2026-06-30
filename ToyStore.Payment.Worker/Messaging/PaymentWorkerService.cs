@@ -15,17 +15,17 @@ namespace ToyStore.Payment.Worker.Messaging
     public class PaymentWorkerService : BackgroundService
     {
         private readonly ServiceBusClient _client;
-        private readonly PaymentMessageConsumer _consumer;
+        private readonly IServiceScopeFactory _scopeFactory;
         private readonly ILogger<PaymentWorkerService> _logger;
         private ServiceBusProcessor? _processor;
 
         public PaymentWorkerService(
             ServiceBusClient client,
-            PaymentMessageConsumer consumer,
+            IServiceScopeFactory scopeFactory,
             ILogger<PaymentWorkerService> logger)
         {
             _client = client;
-            _consumer = consumer;
+            _scopeFactory = scopeFactory;
             _logger = logger;
         }
 
@@ -45,8 +45,19 @@ namespace ToyStore.Payment.Worker.Messaging
             });
 
             // Registra os handlers
-            _processor.ProcessMessageAsync += _consumer.ProcessMessageAsync;
-            _processor.ProcessErrorAsync += _consumer.ProcessErrorAsync;
+            _processor.ProcessMessageAsync += async args =>
+            {
+                using var scope = _scopeFactory.CreateScope();
+                var consumer = scope.ServiceProvider.GetRequiredService<PaymentMessageConsumer>();
+                await consumer.ProcessMessageAsync(args);
+            };
+
+            _processor.ProcessErrorAsync += async args =>
+            {
+                using var scope = _scopeFactory.CreateScope();
+                var consumer = scope.ServiceProvider.GetRequiredService<PaymentMessageConsumer>();
+                await consumer.ProcessErrorAsync(args);
+            };
 
             // Inicia o processamento
             await _processor.StartProcessingAsync(stoppingToken);

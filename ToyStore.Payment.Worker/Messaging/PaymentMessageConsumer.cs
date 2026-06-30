@@ -10,55 +10,52 @@ using ToyStore.Contracts.Commands;
 namespace ToyStore.Payment.Worker.Messaging
 {
     /// <summary>
-    /// Responsável pelo processamento de cada mensagem recebida da payment-queue.
-    /// Separado do WorkerService para facilitar testes e evolução futura.
+    /// Responsável pelo recebimento e orquestração do processamento das mensagens da payment-queue.
+    /// Delega o processamento de negócio ao PaymentProcessor.
     /// </summary>
     public class PaymentMessageConsumer
     {
-        private readonly ILogger<PaymentMessageConsumer> _logger;
         private readonly PaymentProcessor _processor;
+        private readonly ILogger<PaymentMessageConsumer> _logger;
 
-        public PaymentMessageConsumer(ILogger<PaymentMessageConsumer> logger, PaymentProcessor processor)
+        public PaymentMessageConsumer(
+            PaymentProcessor processor,
+            ILogger<PaymentMessageConsumer> logger)
         {
-            _logger = logger;
             _processor = processor;
+            _logger = logger;
         }
 
         public async Task ProcessMessageAsync(ProcessMessageEventArgs args)
         {
             _logger.LogInformation(
-                "Mensagem recebida da fila. MessageId: {MessageId} | Horário: {ReceivedAt}",
+                "Mensagem recebida | MessageId: {MessageId} | Horário: {ReceivedAt}",
                 args.Message.MessageId,
                 DateTimeOffset.UtcNow);
 
             try
             {
-                // Desserializa o JSON de volta para o comando
                 var json = args.Message.Body.ToString();
 
-                var command = JsonSerializer.Deserialize<CreatePaymentCommand>(json, new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true
-                });
+                var command = JsonSerializer.Deserialize<CreatePaymentCommand>(json,
+                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
                 if (command is null)
                     throw new InvalidOperationException("Falha na desserialização: comando nulo.");
 
-                // Registra as informações recebidas
                 _logger.LogInformation(
-                    "CreatePaymentCommand processado | OrderId: {OrderId} | Cliente: {CustomerName} | Total: {TotalAmount:C} | CriadoEm: {CreatedAt}",
+                    "CreatePaymentCommand desserializado | OrderId: {OrderId} | Cliente: {CustomerName}",
                     command.OrderId,
-                    command.CustomerName,
-                    command.TotalAmount,
-                    command.CreatedAt);
+                    command.CustomerName);
 
+                // Delega o processamento
                 await _processor.ProcessAsync(command);
 
-                // Conclui a mensagem — remove da fila permanentemente
+                // CompleteMessageAsync SOMENTE após tudo concluído com sucesso
                 await args.CompleteMessageAsync(args.Message);
 
                 _logger.LogInformation(
-                    "Mensagem {MessageId} concluída com sucesso (CompleteMessageAsync).",
+                    "Mensagem {MessageId} concluída com CompleteMessageAsync.",
                     args.Message.MessageId);
             }
             catch (Exception ex)
@@ -68,7 +65,6 @@ namespace ToyStore.Payment.Worker.Messaging
                     "Erro ao processar mensagem {MessageId}. Executando AbandonMessageAsync.",
                     args.Message.MessageId);
 
-                // Abandona — a mensagem volta para a fila e o DeliveryCount é incrementado
                 await args.AbandonMessageAsync(args.Message);
             }
         }
@@ -77,9 +73,8 @@ namespace ToyStore.Payment.Worker.Messaging
         {
             _logger.LogError(
                 args.Exception,
-                "Erro no ServiceBusProcessor | Fonte: {ErrorSource} | Namespace: {Namespace} | Entidade: {EntityPath}",
+                "Erro no ServiceBusProcessor | Fonte: {ErrorSource} | Entidade: {EntityPath}",
                 args.ErrorSource,
-                args.FullyQualifiedNamespace,
                 args.EntityPath);
 
             return Task.CompletedTask;

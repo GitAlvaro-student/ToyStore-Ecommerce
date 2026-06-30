@@ -1,6 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using ToyStore.ApiGateway.Services;
+using ToyStore.Contracts.Commands;
 using ToyStore.Contracts.Requests;
+using ToyStore.Infrastructure.Messaging.AzureServiceBus.Interfaces;
+using ToyStore.Infrastructure.Messaging.ServiceBus.Configurations;
 
 namespace ToyStore.ApiGateway.Controllers;
 
@@ -9,10 +12,12 @@ namespace ToyStore.ApiGateway.Controllers;
 public class OrdersController : ControllerBase
 {
     private readonly IOrderService _orderService;
+    private readonly IMessagePublisher _publisher;
 
-    public OrdersController(IOrderService orderService)
+    public OrdersController(IOrderService orderService, IMessagePublisher publisher)
     {
         _orderService = orderService;
+        _publisher = publisher;
     }
 
     [HttpPost]
@@ -21,6 +26,17 @@ public class OrdersController : ControllerBase
     public async Task<IActionResult> CreateOrder([FromBody] CreateOrderRequest request)
     {
         var response = await _orderService.CreateOrderAsync(request);
+
+        var command = new CreatePaymentCommand
+        {
+            OrderId = response.Id,
+            CustomerName = response.CustomerName,
+            TotalAmount = response.TotalAmount,
+            CreatedAt = response.CreatedAt
+        };
+
+        await _publisher.PublishAsync(command, ServiceBusQueues.PaymentQueue);
+
         return CreatedAtAction(nameof(GetOrder), new { id = response.Id }, response);
     }
 

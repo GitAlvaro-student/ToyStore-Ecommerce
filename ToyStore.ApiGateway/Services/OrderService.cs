@@ -12,16 +12,13 @@ namespace ToyStore.ApiGateway.Services;
 public class OrderService : IOrderService
 {
     private readonly IOrderRepository _orderRepository;
-    private readonly IMessagePublisher _publisher;
     private readonly ILogger<OrderService> _logger;
 
     public OrderService(
         IOrderRepository orderRepository,
-        IMessagePublisher publisher,
         ILogger<OrderService> logger)
     {
         _orderRepository = orderRepository;
-        _publisher = publisher;
         _logger = logger;
     }
 
@@ -68,8 +65,6 @@ public class OrderService : IOrderService
             TotalAmount = order.TotalAmount,
             CreatedAt = order.CreatedAt
         };
-
-        await _publisher.PublishAsync(command, ServiceBusQueues.PaymentQueue);
 
         _logger.LogInformation(
             "CreatePaymentCommand publicado para o pedido {OrderId}.", order.Id);

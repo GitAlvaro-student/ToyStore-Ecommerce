@@ -23,8 +23,8 @@ builder.Services.AddRepositories();
 builder.Services.AddApplicationServices();
 
 // Registra o consumidor e o Worker
-builder.Services.AddSingleton<PaymentProcessor>();
-builder.Services.AddSingleton<PaymentMessageConsumer>();
+builder.Services.AddTransient<PaymentProcessor>();
+builder.Services.AddTransient<PaymentMessageConsumer>();
 builder.Services.AddHostedService<PaymentWorkerService>();
 
 var host = builder.Build();
