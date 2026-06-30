@@ -35,7 +35,7 @@ public class OrdersController : ControllerBase
             CreatedAt = response.CreatedAt
         };
 
-        await _publisher.PublishAsync(command, ServiceBusQueues.PaymentQueue);
+        await _publisher.PublishToQueueAsync(command, ServiceBusQueues.PaymentQueue);
 
         return CreatedAtAction(nameof(GetOrder), new { id = response.Id }, response);
     }

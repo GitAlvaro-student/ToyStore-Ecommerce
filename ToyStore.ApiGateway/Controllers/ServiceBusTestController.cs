@@ -31,7 +31,7 @@ public class ServiceBusTestController : ControllerBase
             Payload = request.Payload
         };
 
-        await _publisher.PublishAsync(testMessage, request.QueueName);
+        await _publisher.PublishToQueueAsync(testMessage, request.QueueName);
 
         return Ok(new
         {
