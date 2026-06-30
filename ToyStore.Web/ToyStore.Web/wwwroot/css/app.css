@@ -1,0 +1,12 @@
+html, body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+}
+
+a {
+    color: inherit;
+}
+
+.navbar-nav .nav-link.active {
+    color: var(--bs-primary) !important;
+    font-weight: 600;
+}

@@ -1,0 +1,95 @@
+@page "/produtos/{Id:guid}"
+@inject ProductService ProductService
+@inject CartService CartService
+@inject NavigationManager NavigationManager
+
+<PageTitle>ToyStore - Detalhes do Produto</PageTitle>
+
+@if (_errorMessage is not null)
+{
+    <div class="alert alert-danger" role="alert">
+        <i class="bi bi-exclamation-triangle me-1"></i>@_errorMessage
+    </div>
+}
+else if (!_loaded)
+{
+    <Components.Loading.Loading Message="Carregando detalhes do produto..." />
+}
+else if (_product is null)
+{
+    <Components.EmptyState.EmptyState
+        Title="Produto não encontrado"
+        Message="Não foi possível localizar este brinquedo."
+        Icon="bi-emoji-frown"
+        ActionText="Voltar para Produtos"
+        ActionUrl="/produtos" />
+}
+else
+{
+    <div class="row g-4">
+        <div class="col-md-5">
+            <img src="@_product.ImageUrl" class="img-fluid rounded-4 shadow-sm" alt="@_product.Name" />
+        </div>
+        <div class="col-md-7">
+            <span class="badge text-bg-light text-secondary mb-2">@_product.Category</span>
+            <h1 class="h3">@_product.Name</h1>
+            <p class="text-muted">@_product.Description</p>
+            <h2 class="text-primary fw-bold mb-4">@_product.Price.ToString("C2")</h2>
+
+            <div class="d-flex align-items-center gap-2 mb-4">
+                <label class="form-label mb-0">Quantidade:</label>
+                <input type="number" class="form-control" style="width: 90px;" min="1" @bind="_quantity" />
+            </div>
+
+            @if (_addedToCart)
+            {
+                <div class="alert alert-success py-2 mb-3">
+                    <i class="bi bi-check-circle me-1"></i>Adicionado ao carrinho!
+                </div>
+            }
+
+            <div class="d-flex gap-2">
+                <button class="btn btn-primary btn-lg" @onclick="AddToCart">
+                    <i class="bi bi-cart-plus me-1"></i>Adicionar ao Carrinho
+                </button>
+                <a href="/produtos" class="btn btn-outline-secondary btn-lg">Voltar</a>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public Guid Id { get; set; }
+
+    private Dtos.ProductDto? _product;
+    private bool _loaded;
+    private string? _errorMessage;
+    private int _quantity = 1;
+    private bool _addedToCart;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _product = await ProductService.GetByIdAsync(Id);
+        }
+        catch (ProductServiceException ex)
+        {
+            _errorMessage = ex.Message;
+        }
+        finally
+        {
+            _loaded = true;
+        }
+    }
+
+    private void AddToCart()
+    {
+        if (_product is null)
+            return;
+
+        CartService.AddItem(_product, _quantity);
+        _addedToCart = true;
+    }
+}

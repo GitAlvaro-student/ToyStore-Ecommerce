@@ -1,0 +1,80 @@
+@page "/checkout"
+
+<PageTitle>ToyStore - Checkout</PageTitle>
+
+<h1 class="h3 mb-4">Checkout</h1>
+
+<div class="row g-4">
+    <div class="col-md-7">
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body">
+                <h2 class="h5 mb-3">Dados do Cliente</h2>
+                <dl class="row mb-0">
+                    <dt class="col-sm-4 text-muted">Nome</dt>
+                    <dd class="col-sm-8">@_customer.Name</dd>
+
+                    <dt class="col-sm-4 text-muted">E-mail</dt>
+                    <dd class="col-sm-8">@_customer.Email</dd>
+
+                    <dt class="col-sm-4 text-muted">Endereço</dt>
+                    <dd class="col-sm-8">@_customer.Address</dd>
+
+                    <dt class="col-sm-4 text-muted">Cidade</dt>
+                    <dd class="col-sm-8">@_customer.City</dd>
+
+                    <dt class="col-sm-4 text-muted">CEP</dt>
+                    <dd class="col-sm-8">@_customer.ZipCode</dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-5">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <h2 class="h5 mb-3">Resumo do Pedido</h2>
+                <ul class="list-group list-group-flush mb-3">
+                    @foreach (var item in _orderItems)
+                    {
+                        <li class="list-group-item d-flex justify-content-between px-0">
+                            <span>@item.ProductName x @item.Quantity</span>
+                            <span>@item.Total.ToString("C2")</span>
+                        </li>
+                    }
+                </ul>
+                <div class="d-flex justify-content-between fw-bold fs-5 mb-3">
+                    <span>Total</span>
+                    <span class="text-primary">@_orderItems.Sum(i => i.Total).ToString("C2")</span>
+                </div>
+                <button class="btn btn-primary w-100" @onclick="FinalizarCompra">
+                    <i class="bi bi-check-circle me-1"></i>Finalizar Compra
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    // Dados fictícios — serão substituídos por dados reais de autenticação/cliente futuramente.
+    private readonly Models.Customer _customer = new()
+    {
+        Name = "Maria da Silva",
+        Email = "maria.silva@example.com",
+        Address = "Rua das Flores, 123",
+        City = "São Paulo - SP",
+        ZipCode = "01000-000"
+    };
+
+    private readonly List<Models.CartItem> _orderItems = new()
+    {
+        new Models.CartItem { ProductName = "Robô Explorador X1", UnitPrice = 189.90m, Quantity = 1 },
+        new Models.CartItem { ProductName = "Pelúcia Urso Soneca", UnitPrice = 79.90m, Quantity = 2 }
+    };
+
+    private void FinalizarCompra()
+    {
+        // Nesta etapa o botão ainda não executa nenhuma ação real.
+        // Na próxima etapa, este método irá enviar o pedido para a API e
+        // redirecionar para a página de confirmação.
+    }
+}

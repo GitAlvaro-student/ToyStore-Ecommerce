@@ -1,0 +1,68 @@
+@page "/"
+@inject ProductService ProductService
+
+<PageTitle>ToyStore - Início</PageTitle>
+
+<section class="bg-primary bg-gradient text-white rounded-4 p-5 mb-5 text-center">
+    <h1 class="display-5 fw-bold">Bem-vindo à ToyStore</h1>
+    <p class="lead mb-4">
+        Brinquedos de qualidade para todas as idades, com entrega rápida e segura para todo o Brasil.
+    </p>
+    <a href="/produtos" class="btn btn-light btn-lg fw-semibold">
+        <i class="bi bi-bag-check me-1"></i>Ver Brinquedos
+    </a>
+</section>
+
+<section class="mb-5">
+    <div class="row text-center g-4">
+        <div class="col-md-4">
+            <i class="bi bi-truck fs-1 text-primary"></i>
+            <h5 class="mt-2">Entrega Rápida</h5>
+            <p class="text-muted small">Receba seus brinquedos em poucos dias úteis.</p>
+        </div>
+        <div class="col-md-4">
+            <i class="bi bi-shield-check fs-1 text-primary"></i>
+            <h5 class="mt-2">Compra Segura</h5>
+            <p class="text-muted small">Ambiente seguro do início ao fim da sua compra.</p>
+        </div>
+        <div class="col-md-4">
+            <i class="bi bi-emoji-smile fs-1 text-primary"></i>
+            <h5 class="mt-2">Qualidade Garantida</h5>
+            <p class="text-muted small">Produtos selecionados para a diversão da sua família.</p>
+        </div>
+    </div>
+</section>
+
+<section>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="h4 mb-0">Brinquedos em destaque</h2>
+        <a href="/produtos" class="small">Ver todos &rarr;</a>
+    </div>
+
+    @if (_errorMessage is not null)
+    {
+        <div class="alert alert-danger" role="alert">@_errorMessage</div>
+    }
+    else if (_featured is null)
+    {
+        <Components.Loading.Loading Message="Carregando destaques..." />
+    }
+</section>
+
+@code {
+    private List<Dtos.ProductDto>? _featured;
+    private string? _errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var all = await ProductService.GetAllAsync();
+            _featured = all.Take(4).ToList();
+        }
+        catch (ProductServiceException ex)
+        {
+            _errorMessage = ex.Message;
+        }
+    }
+}
