@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 using ToyStore.ApiGateway.Services;
 using ToyStore.Contracts.Commands;
 using ToyStore.Contracts.Enums;
+using ToyStore.Contracts.Events;
+using ToyStore.Infrastructure.Messaging.AzureServiceBus.Interfaces;
+using ToyStore.Infrastructure.Messaging.ServiceBus.Configurations;
 
 namespace ToyStore.Payment.Worker.Messaging
 {
@@ -16,48 +19,63 @@ namespace ToyStore.Payment.Worker.Messaging
     public class PaymentProcessor
     {
         private readonly IOrderService _orderService;
+        private readonly IMessagePublisher _publisher;
         private readonly ILogger<PaymentProcessor> _logger;
 
-        // Semente fixa garante comportamento determinístico nos testes
         private static readonly Random _random = new(42);
 
         public PaymentProcessor(
             IOrderService orderService,
+            IMessagePublisher publisher,
             ILogger<PaymentProcessor> logger)
         {
             _orderService = orderService;
+            _publisher = publisher;
             _logger = logger;
         }
 
         public async Task ProcessAsync(CreatePaymentCommand command)
         {
             _logger.LogInformation(
-                "Iniciando processamento do pagamento | OrderId: {OrderId} | Total: {TotalAmount:C}",
-                command.OrderId,
-                command.TotalAmount);
+                "Iniciando processamento | OrderId: {OrderId} | Total: {TotalAmount:C}",
+                command.OrderId, command.TotalAmount);
 
-            // Marca o pedido como em processamento
             await _orderService.UpdateOrderStatusAsync(command.OrderId, OrderStatus.PaymentProcessing);
 
-            // Simula latência de um gateway de pagamento real
-            await Task.Delay(TimeSpan.FromMilliseconds(500));
+            await Task.Delay(500); // simula latência do gateway
 
-            // Simula aprovação: 80% aprovado, 20% reprovado
             var approved = _random.Next(1, 101) <= 80;
-            var resultStatus = approved ? OrderStatus.Paid : OrderStatus.PaymentFailed;
 
             _logger.LogInformation(
                 "Resultado do pagamento | OrderId: {OrderId} | Resultado: {Result}",
-                command.OrderId,
-                approved ? "APROVADO" : "REPROVADO");
+                command.OrderId, approved ? "APROVADO" : "REPROVADO");
 
-            // Atualiza o status final no banco
-            await _orderService.UpdateOrderStatusAsync(command.OrderId, resultStatus);
+            if (approved)
+            {
+                await _orderService.UpdateOrderStatusAsync(command.OrderId, OrderStatus.Paid);
 
-            _logger.LogInformation(
-                "Pedido {OrderId} atualizado para {Status}.",
-                command.OrderId,
-                resultStatus);
+                // Publica o evento no Topic ANTES do CompleteMessageAsync
+                // (o Complete ocorre no Consumer após este método retornar com sucesso)
+                var approvedEvent = new PaymentApprovedEvent
+                {
+                    OrderId = command.OrderId,
+                    CustomerName = command.CustomerName,
+                    TotalAmount = command.TotalAmount,
+                    ApprovedAt = DateTime.UtcNow
+                };
+
+                await _publisher.PublishToTopicAsync(
+                    approvedEvent,
+                    ServiceBusTopics.PaymentEvents.TopicName);
+
+                _logger.LogInformation(
+                    "PaymentApprovedEvent publicado no Topic | OrderId: {OrderId}",
+                    command.OrderId);
+            }
+            else
+            {
+                await _orderService.UpdateOrderStatusAsync(command.OrderId, OrderStatus.PaymentFailed);
+            }
         }
     }
 }

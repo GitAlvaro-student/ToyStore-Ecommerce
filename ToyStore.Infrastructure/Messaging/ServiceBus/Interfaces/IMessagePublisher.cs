@@ -9,8 +9,11 @@ public interface IMessagePublisher
     /// <summary>
     /// Publica uma mensagem serializada em JSON na fila informada.
     /// </summary>
-    /// <typeparam name="T">Tipo da mensagem a ser publicada.</typeparam>
-    /// <param name="message">Objeto a ser serializado e enviado.</param>
-    /// <param name="queueName">Nome da fila de destino.</param>
-    Task PublishAsync<T>(T message, string queueName) where T : class;
+    Task PublishToQueueAsync<T>(T message, string queueName) where T : class;
+
+    /// <summary>
+    /// Publica uma mensagem em um Topic.
+    /// Todas as Subscriptions ativas receberão uma cópia independente.
+    /// </summary>
+    Task PublishToTopicAsync<T>(T message, string topicName) where T : class;
 }

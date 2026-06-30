@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using ToyStore.ApiGateway.Extensions;
 using ToyStore.ApiGateway.Persistence;
 using ToyStore.Infrastructure.Messaging.AzureServiceBus.Configurations;
+using ToyStore.Infrastructure.Messaging.AzureServiceBus.Interfaces;
+using ToyStore.Infrastructure.Messaging.AzureServiceBus.Services;
 using ToyStore.Payment.Worker.Messaging;
 
 var builder = Host.CreateApplicationBuilder(args);
@@ -17,6 +19,7 @@ if (string.IsNullOrWhiteSpace(connectionString))
 
 // Registra o ServiceBusClient como Singleton
 builder.Services.AddSingleton(_ => new ServiceBusClient(connectionString));
+builder.Services.AddSingleton<IMessagePublisher, ServiceBusMessagePublisher>();
 
 builder.Services.AddDbContext<ToyStoreDbContext>(options => options.UseInMemoryDatabase("ToyStoreDb"));
 builder.Services.AddRepositories();
