@@ -52,6 +52,8 @@ namespace ToyStore.Payment.Worker.Messaging
 
             if (approved)
             {
+                Thread.Sleep(1000);
+
                 await _orderService.UpdateOrderStatusAsync(command.OrderId, OrderStatus.Paid);
 
                 // Publica o evento no Topic ANTES do CompleteMessageAsync

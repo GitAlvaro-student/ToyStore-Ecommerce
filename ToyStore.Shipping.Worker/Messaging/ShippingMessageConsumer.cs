@@ -5,6 +5,8 @@ using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using ToyStore.ApiGateway.Services;
+using ToyStore.Contracts.Enums;
 using ToyStore.Contracts.Events;
 
 namespace ToyStore.Shipping.Worker.Messaging
@@ -12,10 +14,12 @@ namespace ToyStore.Shipping.Worker.Messaging
     public class ShippingMessageConsumer
     {
         private readonly ILogger<ShippingMessageConsumer> _logger;
+        private readonly IServiceScopeFactory _serviceScopeFactory;
 
-        public ShippingMessageConsumer(ILogger<ShippingMessageConsumer> logger)
+        public ShippingMessageConsumer(ILogger<ShippingMessageConsumer> logger, IServiceScopeFactory serviceScopeFactory)
         {
             _logger = logger;
+            _serviceScopeFactory = serviceScopeFactory;
         }
 
         public async Task ProcessMessageAsync(ProcessMessageEventArgs args)
@@ -51,6 +55,11 @@ namespace ToyStore.Shipping.Worker.Messaging
                 _logger.LogInformation(
                     "Envio preparado com sucesso para OrderId: {OrderId}.",
                     paymentEvent.OrderId);
+
+                using var scope = _serviceScopeFactory.CreateScope();
+                var orderService = scope.ServiceProvider.GetRequiredService<IOrderService>();
+                Thread.Sleep(1000);
+                await orderService.UpdateOrderStatusAsync(paymentEvent.OrderId, OrderStatus.Shipped);
 
                 await args.CompleteMessageAsync(args.Message);
 

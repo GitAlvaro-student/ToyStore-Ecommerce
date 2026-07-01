@@ -1,5 +1,6 @@
 using Azure.Messaging.ServiceBus;
 using Microsoft.EntityFrameworkCore;
+using ToyStore.ApiGateway.Extensions;
 using ToyStore.ApiGateway.Persistence;
 using ToyStore.Infrastructure.Messaging.AzureServiceBus.Configurations;
 using ToyStore.Shipping.Worker;
@@ -19,6 +20,9 @@ builder.Services.AddSingleton(_ => new ServiceBusClient(connectionString));
 builder.Services.AddDbContext<ToyStoreDbContext>(
     options =>
         options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddRepositories();
+builder.Services.AddApplicationServices();
 
 builder.Services.AddTransient<ShippingMessageConsumer>();
 builder.Services.AddHostedService<ShippingWorkerService>();

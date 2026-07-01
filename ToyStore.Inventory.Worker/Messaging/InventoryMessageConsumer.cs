@@ -1,6 +1,8 @@
 ﻿using Azure.Messaging.ServiceBus;
 using System.Configuration;
 using System.Text.Json;
+using ToyStore.ApiGateway.Services;
+using ToyStore.Contracts.Enums;
 using ToyStore.Contracts.Events;
 
 namespace ToyStore.Inventory.Worker.Messaging;
@@ -8,19 +10,20 @@ namespace ToyStore.Inventory.Worker.Messaging;
 public class InventoryMessageConsumer
 {
     private readonly ILogger<InventoryMessageConsumer> _logger;
+    private readonly IServiceScopeFactory _scopeFactory;
     private readonly bool _simulateFailure;
 
     public InventoryMessageConsumer(ILogger<InventoryMessageConsumer> logger,
-        IConfiguration configuration)
+        IConfiguration configuration,
+        IServiceScopeFactory scopeFactory)
     {
         _logger = logger;
         _simulateFailure = configuration.GetValue<bool>("InventorySimulation:SimulateFailure");
+        _scopeFactory = scopeFactory;
     }
 
     public async Task ProcessMessageAsync(ProcessMessageEventArgs args)
     {
-        // DeliveryCount indica quantas vezes esta mensagem já foi entregue
-        // (1 = primeira tentativa, 2 = segunda tentativa, e assim por diante)
         var deliveryCount = args.Message.DeliveryCount;
 
         _logger.LogInformation(
@@ -53,7 +56,6 @@ public class InventoryMessageConsumer
                     $"[SIMULAÇÃO] Falha proposital ao reservar estoque para OrderId {paymentEvent.OrderId} " +
                     $"(Tentativa {deliveryCount}).");
             }
-            // ────────────────────────────────────────────────────────────────────
 
             _logger.LogInformation(
                 "Simulando reserva de estoque para OrderId: {OrderId}...",
@@ -64,6 +66,11 @@ public class InventoryMessageConsumer
             _logger.LogInformation(
                 "Estoque reservado com sucesso para OrderId: {OrderId}.",
                 paymentEvent.OrderId);
+
+            using var scope = _scopeFactory.CreateScope();
+            var orderService = scope.ServiceProvider.GetRequiredService<IOrderService>();
+            Thread.Sleep(1000);
+            await orderService.UpdateOrderStatusAsync(paymentEvent.OrderId, OrderStatus.InventoryReserved);
 
             await args.CompleteMessageAsync(args.Message);
 
@@ -79,8 +86,6 @@ public class InventoryMessageConsumer
                 args.Message.MessageId,
                 deliveryCount);
 
-            // NÃO usar DeadLetterMessageAsync aqui — queremos observar
-            // o comportamento automático do Azure ao atingir MaxDeliveryCount
             await args.AbandonMessageAsync(args.Message);
         }
     }
