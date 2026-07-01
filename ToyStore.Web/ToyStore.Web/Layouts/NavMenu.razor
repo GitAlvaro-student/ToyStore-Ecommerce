@@ -1,0 +1,62 @@
+@inject CartService CartService
+@implements IDisposable
+
+<nav class="navbar navbar-expand-md navbar-light bg-light border-bottom">
+    <div class="container">
+        <button class="navbar-toggler" type="button" @onclick="ToggleNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse @(_collapsed ? "" : "show")">
+            <ul class="navbar-nav mx-auto gap-2 py-2">
+                <li class="nav-item">
+                    <NavLink class="nav-link" href="/" Match="NavLinkMatch.All">
+                        <i class="bi bi-house-door me-1"></i>Home
+                    </NavLink>
+                </li>
+                <li class="nav-item">
+                    <NavLink class="nav-link" href="/produtos">
+                        <i class="bi bi-box-seam me-1"></i>Produtos
+                    </NavLink>
+                </li>
+                <li class="nav-item">
+                    <NavLink class="nav-link" href="/carrinho">
+                        <i class="bi bi-cart3 me-1"></i>Carrinho
+                        @if (CartService.GetItemCount() > 0)
+                        {
+                            <span class="badge rounded-pill bg-primary ms-1">@CartService.GetItemCount()</span>
+                        }
+                    </NavLink>
+                </li>
+                <li class="nav-item">
+                    <NavLink class="nav-link" href="/checkout">
+                        <i class="bi bi-credit-card me-1"></i>Checkout
+                    </NavLink>
+                </li>
+                <li class="nav-item">
+                    <NavLink class="nav-link" href="/monitor">
+                        <i class="bi bi-activity me-1"></i>Monitor
+                    </NavLink>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+@code {
+    private bool _collapsed = true;
+
+    protected override void OnInitialized()
+    {
+        CartService.OnChange += StateHasChanged;
+    }
+
+    private void ToggleNav()
+    {
+        _collapsed = !_collapsed;
+    }
+
+    public void Dispose()
+    {
+        CartService.OnChange -= StateHasChanged;
+    }
+}

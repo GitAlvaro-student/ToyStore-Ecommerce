@@ -1,0 +1,95 @@
+﻿@namespace ToyStore.Web.Components.OrderTimeline
+@using ToyStore.Web.Dtos
+
+<div class="order-timeline">
+    @foreach (var step in _steps)
+    {
+        <div class="timeline-item d-flex align-items-start gap-3 mb-3">
+            <div class="timeline-icon @GetIconClass(step.State)">
+                <i class="bi @GetIcon(step.State)"></i>
+            </div>
+            <div class="pt-1">
+                <div class="fw-semibold">@step.Label</div>
+                <div class="text-muted small">@step.Description</div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public OrderStatusDto Status { get; set; }
+
+    private enum StepState { Completed, Active, Pending, Failed }
+
+    private record TimelineStep(string Label, string Description, StepState State);
+
+    private List<TimelineStep> _steps = new();
+
+    protected override void OnParametersSet()
+    {
+        _steps = new List<TimelineStep>
+        {
+            BuildStep(
+                "Pedido criado",
+                "O pedido foi recebido pela API e registrado com sucesso.",
+                completedFrom: OrderStatusDto.Pending),
+
+            BuildStep(
+                "Pagamento",
+                "Mensagem publicada no Payment Queue. Payment Worker está processando.",
+                completedFrom: OrderStatusDto.Paid,
+                activeAt: OrderStatusDto.PaymentProcessing,
+                failedAt: OrderStatusDto.PaymentFailed),
+
+            BuildStep(
+                "Estoque reservado",
+                "Payment Topic notificou o Inventory Worker. Estoque confirmado.",
+                completedFrom: OrderStatusDto.InventoryReserved),
+
+            BuildStep(
+                "Preparação para envio",
+                "Payment Topic notificou o Shipping Worker. Pedido preparado para entrega.",
+                completedFrom: OrderStatusDto.Shipped),
+        };
+    }
+
+    private TimelineStep BuildStep(
+        string label,
+        string description,
+        OrderStatusDto completedFrom,
+        OrderStatusDto? activeAt = null,
+        OrderStatusDto? failedAt = null)
+    {
+        StepState state;
+
+        if (failedAt.HasValue && Status == failedAt.Value)
+            state = StepState.Failed;
+        else if (Status == OrderStatusDto.Cancelled)
+            state = StepState.Pending;
+        else if (activeAt.HasValue && Status == activeAt.Value)
+            state = StepState.Active;
+        else if (Status >= completedFrom)
+            state = StepState.Completed;
+        else
+            state = StepState.Pending;
+
+        return new TimelineStep(label, description, state);
+    }
+
+    private static string GetIconClass(StepState state) => state switch
+    {
+        StepState.Completed => "icon-completed",
+        StepState.Active => "icon-active",
+        StepState.Failed => "icon-failed",
+        _ => "icon-pending"
+    };
+
+    private static string GetIcon(StepState state) => state switch
+    {
+        StepState.Completed => "bi-check-circle-fill",
+        StepState.Active => "bi-arrow-repeat",
+        StepState.Failed => "bi-x-circle-fill",
+        _ => "bi-circle"
+    };
+}

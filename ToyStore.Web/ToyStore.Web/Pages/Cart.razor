@@ -1,0 +1,100 @@
+@page "/carrinho"
+@inject CartService CartService
+@implements IDisposable
+
+<PageTitle>ToyStore - Carrinho</PageTitle>
+
+<h1 class="h3 mb-4">Meu Carrinho</h1>
+
+@if (CartService.Items.Count == 0)
+{
+    <Components.EmptyState.EmptyState
+        Title="Seu carrinho está vazio"
+        Message="Adicione brinquedos ao carrinho para continuar."
+        Icon="bi-cart-x"
+        ActionText="Ver Produtos"
+        ActionUrl="/produtos" />
+}
+else
+{
+    <div class="table-responsive mb-4">
+        <table class="table align-middle">
+            <thead>
+                <tr>
+                    <th>Produto</th>
+                    <th class="text-center" style="width: 160px;">Quantidade</th>
+                    <th class="text-end">Valor Unitário</th>
+                    <th class="text-end">Total</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in CartService.Items)
+                {
+                    <tr>
+                        <td class="d-flex align-items-center gap-2">
+                            <img src="@item.ImageUrl" alt="@item.ProductName" style="width:48px;height:48px;object-fit:cover;border-radius:8px;" />
+                            <span>@item.ProductName</span>
+                        </td>
+                        <td class="text-center">
+                            <div class="input-group input-group-sm">
+                                <button class="btn btn-outline-secondary" @onclick="() => Decrease(item)">-</button>
+                                <input type="number" class="form-control text-center" value="@item.Quantity"
+                                       @onchange="@(e => OnQuantityChanged(item, e))" />
+                                <button class="btn btn-outline-secondary" @onclick="() => Increase(item)">+</button>
+                            </div>
+                        </td>
+                        <td class="text-end">@item.UnitPrice.ToString("C2")</td>
+                        <td class="text-end">@item.Total.ToString("C2")</td>
+                        <td class="text-end">
+                            <button class="btn btn-sm btn-outline-danger" @onclick="() => Remove(item)">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div class="d-flex justify-content-end">
+        <div class="card border-0 shadow-sm" style="min-width: 280px;">
+            <div class="card-body">
+                <div class="d-flex justify-content-between fw-bold fs-5">
+                    <span>Total</span>
+                    <span class="text-primary">@CartService.GetTotal().ToString("C2")</span>
+                </div>
+                <a href="/checkout" class="btn btn-primary w-100 mt-3">
+                    Finalizar Compra <i class="bi bi-arrow-right ms-1"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    protected override void OnInitialized()
+    {
+        CartService.OnChange += StateHasChanged;
+    }
+
+    private void Increase(Models.CartItem item)
+        => CartService.UpdateQuantity(item.ProductId, item.Quantity + 1);
+
+    private void Decrease(Models.CartItem item)
+        => CartService.UpdateQuantity(item.ProductId, item.Quantity - 1);
+
+    private void Remove(Models.CartItem item)
+        => CartService.RemoveItem(item.ProductId);
+
+    private void OnQuantityChanged(Models.CartItem item, ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out var newQuantity))
+            CartService.UpdateQuantity(item.ProductId, newQuantity);
+    }
+
+    public void Dispose()
+    {
+        CartService.OnChange -= StateHasChanged;
+    }
+}

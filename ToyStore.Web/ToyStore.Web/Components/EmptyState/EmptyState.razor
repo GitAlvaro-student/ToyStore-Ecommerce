@@ -1,0 +1,28 @@
+@namespace ToyStore.Web.Components.EmptyState
+
+<div class="d-flex flex-column align-items-center justify-content-center text-center py-5 text-secondary">
+    <i class="bi @Icon display-1 mb-3 text-secondary"></i>
+    <h4 class="text-dark">@Title</h4>
+    <p class="mb-3">@Message</p>
+    @if (!string.IsNullOrWhiteSpace(ActionText) && !string.IsNullOrWhiteSpace(ActionUrl))
+    {
+        <a href="@ActionUrl" class="btn btn-primary">@ActionText</a>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public string Title { get; set; } = "Nada por aqui";
+
+    [Parameter]
+    public string Message { get; set; } = "Não há conteúdo para exibir neste momento.";
+
+    [Parameter]
+    public string Icon { get; set; } = "bi-inbox";
+
+    [Parameter]
+    public string? ActionText { get; set; }
+
+    [Parameter]
+    public string? ActionUrl { get; set; }
+}

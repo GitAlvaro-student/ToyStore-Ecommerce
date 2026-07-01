@@ -1,0 +1,22 @@
+@namespace ToyStore.Web.Components.ProductCard
+@using ToyStore.Web.Dtos
+
+<div class="card h-100 product-card shadow-sm border-0">
+    <img src="@Product.ImageUrl" class="card-img-top product-card-img" alt="@Product.Name" />
+    <div class="card-body d-flex flex-column">
+        <span class="badge text-bg-light text-secondary mb-2 align-self-start">@Product.Category</span>
+        <h5 class="card-title">@Product.Name</h5>
+        <p class="card-text text-muted small flex-grow-1">@Product.Description</p>
+        <div class="d-flex align-items-center justify-content-between mt-2">
+            <span class="fs-5 fw-bold text-primary">@Product.Price.ToString("C2")</span>
+            <a href="@($"/produtos/{Product.Id}")" class="btn btn-primary btn-sm">
+                Ver detalhes
+            </a>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public ProductDto Product { get; set; } = null!;
+}

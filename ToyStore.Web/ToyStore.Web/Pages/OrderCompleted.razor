@@ -1,0 +1,36 @@
+@page "/pedido-finalizado/{OrderId:guid}"
+
+<PageTitle>ToyStore - Pedido Criado</PageTitle>
+
+<div class="text-center py-5">
+    <i class="bi bi-check-circle-fill text-success display-1 mb-3"></i>
+    <h1 class="h3">Pedido criado com sucesso!</h1>
+    <p class="text-muted lead mb-2">
+        Seu pedido foi recebido e será processado em instantes.
+    </p>
+    <p class="text-muted mb-1">
+        O pagamento, a reserva de estoque e a preparação para envio serão executados
+        de forma assíncrona.
+    </p>
+
+    @if (OrderId != Guid.Empty)
+    {
+        <p class="mt-3 mb-0 text-secondary small">
+            Número do pedido: <span class="fw-semibold text-dark">@OrderId</span>
+        </p>
+        <a href="@($"/monitor/{OrderId}")" class="btn btn-outline-primary mt-3 me-2">
+            <i class="bi bi-activity me-1"></i>Acompanhar Pedido
+        </a>
+    }
+
+    <p class="mt-4 fw-semibold text-primary">Obrigado por comprar na ToyStore!</p>
+
+    <a href="/produtos" class="btn btn-primary mt-2">
+        <i class="bi bi-bag me-1"></i>Continuar Comprando
+    </a>
+</div>
+
+@code {
+    [Parameter]
+    public Guid OrderId { get; set; }
+}
