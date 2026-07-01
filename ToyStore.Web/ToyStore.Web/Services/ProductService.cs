@@ -21,7 +21,14 @@ namespace ToyStore.Web.Services
         {
             try
             {
-                var products = await _httpClient.GetFromJsonAsync<List<ProductDto>>("api/products");
+                var response = await _httpClient.GetAsync("api/products");
+                var json = await response.Content.ReadAsStringAsync();
+                _logger.LogInformation("Resposta da API: {Json}", json);
+
+                var products = System.Text.Json.JsonSerializer.Deserialize<List<ProductDto>>(
+                    json,
+                    new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
                 return products ?? new List<ProductDto>();
             }
             catch (Exception ex)

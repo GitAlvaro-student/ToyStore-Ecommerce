@@ -1,10 +1,10 @@
 @page "/produtos"
 @inject ProductService ProductService
+@using ToyStore.Web.Components
 
 <PageTitle>ToyStore - Produtos</PageTitle>
 
 <h1 class="h3 mb-4">Nossos Produtos</h1>
-
 @if (_errorMessage is not null)
 {
     <div class="alert alert-danger" role="alert">
@@ -13,11 +13,11 @@
 }
 else if (_products is null)
 {
-    <Components.Loading.Loading Message="Carregando produtos..." />
+    <Loading Message="Carregando produtos..." />
 }
 else if (_products.Count == 0)
 {
-    <Components.EmptyState.EmptyState
+    <EmptyState
         Title="Nenhum produto encontrado"
         Message="Ainda não há produtos cadastrados."
         Icon="bi-box-seam" />
@@ -28,7 +28,7 @@ else
         @foreach (var product in _products)
         {
             <div class="col-sm-6 col-md-4 col-lg-3">
-                <Components.ProductCard.ProductCard Product="product" />
+                <ProductCard Product="product" />
             </div>
         }
     </div>

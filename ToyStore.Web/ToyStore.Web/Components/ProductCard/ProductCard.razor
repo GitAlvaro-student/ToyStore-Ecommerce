@@ -1,4 +1,5 @@
 @namespace ToyStore.Web.Components.ProductCard
+@using ToyStore.Web.Dtos
 
 <div class="card h-100 product-card shadow-sm border-0">
     <img src="@Product.ImageUrl" class="card-img-top product-card-img" alt="@Product.Name" />
@@ -17,5 +18,5 @@
 
 @code {
     [Parameter, EditorRequired]
-    public Dtos.ProductDto Product { get; set; } = null!;
+    public ProductDto Product { get; set; } = null!;
 }

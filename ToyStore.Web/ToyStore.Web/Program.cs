@@ -17,6 +17,11 @@ builder.Services.AddHttpClient<ProductService>(client =>
     client.BaseAddress = new Uri(apiBaseUrl);
 });
 
+builder.Services.AddHttpClient<OrderService>(client =>
+{
+    client.BaseAddress = new Uri(apiBaseUrl);
+});
+
 // Carrinho em memória — um por circuito/sessão do usuário (Scoped).
 builder.Services.AddScoped<CartService>();
 

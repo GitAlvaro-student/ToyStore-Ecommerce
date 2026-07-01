@@ -13,11 +13,11 @@
 }
 else if (!_loaded)
 {
-    <Components.Loading.Loading Message="Carregando detalhes do produto..." />
+    <Loading Message="Carregando detalhes do produto..." />
 }
 else if (_product is null)
 {
-    <Components.EmptyState.EmptyState
+    <EmptyState
         Title="Produto não encontrado"
         Message="Não foi possível localizar este brinquedo."
         Icon="bi-emoji-frown"
