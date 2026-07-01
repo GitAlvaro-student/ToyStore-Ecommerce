@@ -46,15 +46,7 @@ Com essa ideia em mente, alguns termos aparecem naturalmente quando começamos a
 Nas próximas seções, você vai ver como esses conceitos se encaixam na arquitetura deste projeto.
 
 ## 🏗️ Arquitetura da aplicação
-
-```mermaid
-flowchart TD
-    A[Frontend - Blazor] --> B[API]
-    B --> C[Azure Service Bus]
-    C --> D[Payment Worker]
-    D --> E[Inventory Worker]
-    E --> F[Shipping Worker]
-```
+![Arquitetura](Images/Architecture-Diagram.png)
 
 | Componente | Responsabilidade |
 |---|---|
@@ -99,16 +91,7 @@ Uma breve explicação dos principais conceitos estudados durante o desenvolvime
 
 ## 🔄 Fluxo da aplicação
 
-```mermaid
-flowchart TD
-    A[Cliente] --> B[Blazor]
-    B --> C[API]
-    C --> D[Payment Queue]
-    D --> E[Payment Worker]
-    E --> F[Payment Topic]
-    F --> G[Inventory Worker]
-    G --> H[Shipping Worker]
-```
+  ![Fluxograma](Images/App-Fluxogram.png)
 
 1. O cliente navega pelo catálogo e finaliza o pedido através do **Blazor**.
 2. A **API** recebe a requisição e publica uma mensagem na fila de pagamento.
