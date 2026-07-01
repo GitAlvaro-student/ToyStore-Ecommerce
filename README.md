@@ -12,7 +12,7 @@ Utilizando o cenário de um e-commerce de brinquedos, o projeto mostra como oper
 
 ---
 
-## 🎯 Por que utilizar Azure Service Bus?
+## Por que utilizar Azure Service Bus?
  
 Imagine uma loja durante a Black Friday. Milhares de pessoas clicam em "Comprar" quase ao mesmo tempo. E cada clique desses não é uma tarefa só — é várias:
  
@@ -157,6 +157,8 @@ Uma breve explicação dos principais conceitos estudados durante o desenvolvime
 7. Executar o Blazor.
 8. Criar um pedido e acompanhar o fluxo.
 
+Para mais detalhes de como executar a aplicação acesse:
+[Guia de Execução Completo](Execution.md)
 ---
 
 ## 🎓 Aprendizados
