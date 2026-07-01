@@ -8,10 +8,10 @@ namespace ToyStore.ApiGateway.Extensions;
 
 public static class ServiceCollectionExtensions
 {
-    public static IServiceCollection AddDatabase(this IServiceCollection services)
+    public static IServiceCollection AddDatabase(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddDbContext<ToyStoreDbContext>(options =>
-            options.UseInMemoryDatabase("ToyStoreDb"));
+            options.UseSqlite(configuration.GetConnectionString("DefaultConnection")));
 
         return services;
     }

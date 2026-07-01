@@ -26,7 +26,7 @@ namespace ToyStore.ApiGateway.Persistence
             Description = "Pista com loop duplo e dois carrinhos inclusos. Diversão garantida.",
             Category = "Veículos",
             Price = 149.50m,
-            ImageUrl = "https://www.rihappy.com.br/pista-de-brinquedo-hot-wheels-city-mega-garagem-com-loop-duplo-mattel-1003290458/p?srsltid=AfmBOoqolI1Ve8it9iaDIwgz6lgnRWr61BQErudB5odOWgwVR_ChUC9F"
+            ImageUrl = "https://http2.mlstatic.com/D_NQ_NP_2X_626427-MLA113695175287_062026-F.webp"
         },
         new()
         {

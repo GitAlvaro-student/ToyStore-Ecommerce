@@ -1,4 +1,6 @@
+using Microsoft.EntityFrameworkCore;
 using ToyStore.ApiGateway.Extensions;
+using ToyStore.ApiGateway.Persistence;
 using ToyStore.Infrastructure.Messaging.AzureServiceBus.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -11,7 +13,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 // Database
-builder.Services.AddDatabase();
+builder.Services.AddDatabase(builder.Configuration);
 
 // Repositories
 builder.Services.AddRepositories();
@@ -36,5 +38,11 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
+
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<ToyStoreDbContext>();
+    db.Database.Migrate();
+}
 
 app.Run();

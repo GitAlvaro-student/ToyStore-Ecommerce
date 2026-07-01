@@ -21,7 +21,10 @@ if (string.IsNullOrWhiteSpace(connectionString))
 builder.Services.AddSingleton(_ => new ServiceBusClient(connectionString));
 builder.Services.AddSingleton<IMessagePublisher, ServiceBusMessagePublisher>();
 
-builder.Services.AddDbContext<ToyStoreDbContext>(options => options.UseInMemoryDatabase("ToyStoreDb"));
+builder.Services.AddDbContext<ToyStoreDbContext>(
+    options => 
+        options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+
 builder.Services.AddRepositories();
 builder.Services.AddApplicationServices();
 
